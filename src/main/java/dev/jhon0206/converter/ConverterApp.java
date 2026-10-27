@@ -1,6 +1,6 @@
 package dev.jhon0206.converter;
 
-public class ConvertidorApp {
+public class ConverterApp {
     static void main() {
 
     }
