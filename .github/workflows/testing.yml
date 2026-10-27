@@ -20,26 +20,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configurar JDK 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "25"
           cache: maven
+
+      - name: Dar permiso al Maven Wrapper
+        run: chmod +x mvnw
 
       - name: Mostrar versiones
         run: |     
           java --version
           ./mvnw --version 
 
-      - name: Dar permiso al Maven Wrapper
-        run: chmod +x mvnw
-
       - name: Ejecutar pruebas y verificar cobertura
         run: ./mvnw --batch-mode --no-transfer-progress clean verify
 
       - name: Publicar resultados de pruebas
         if: always()
-
         uses: actions/upload-artifact@v4
         with:
           name: resultados-pruebas
