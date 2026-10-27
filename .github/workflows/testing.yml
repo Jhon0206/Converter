@@ -1,0 +1,66 @@
+name: Continuous integration
+on:
+  push:
+    branches: [main, develop, "feature/**"]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Compilar y ejecutar pruebas
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Descargar código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+
+      - name: Mostrar versiones
+        run: |     
+          java --version
+          ./mvnw --version 
+
+      - name: Dar permiso al Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Ejecutar pruebas y verificar cobertura
+        run: ./mvnw --batch-mode --no-transfer-progress clean verify
+
+      - name: Publicar resultados de pruebas
+        if: always()
+
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-pruebas
+          path: target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Publicar cobertura JaCoCo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-cobertura-jacoco
+          path: target/site/jacoco/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Publicar archivo JAR
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aplicacion-java
+          path: target/*.jar
+          if-no-files-found: error
+          retention-days: 14
